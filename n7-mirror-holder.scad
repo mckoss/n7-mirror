@@ -7,6 +7,10 @@
 
 ========================================================================
 */
+
+// Default # of cylinder sides
+$fn = 36;
+
 //  All Dimensions in mm, Angles (s & t) in Degrees
     a = 32.0;   // Width of mirror mounting area
     b = 68.0;   // Height of mirror mounting area
@@ -51,15 +55,15 @@
             polygon (points = [[0,0], [0, i], [f,f]], paths = [[0,1,2]]);
 // Mirror Holder Left Side Securing Posts
             translate([j,i-m,-c])
-                cylinder(u,w-0.1,w-0.1,center,$fn=36);  // Create posts
+                cylinder(u,w-0.1,w-0.1);  // Create posts
             translate([j,i-n,-c])
-                cylinder(u,w-0.1,w-0.1,center,$fn=36);
+                cylinder(u,w-0.1,w-0.1);
             translate([j,i-p,-c])
-                cylinder(u,w-0.1,w-0.1,center,$fn=36);
+                cylinder(u,w-0.1,w-0.1);
 // Mirror Holder Right Side Securing Posts
             translate([d-w,i-m,-c])
-                cylinder(u,w-0.1,w-0.1,center,$fn=36);
+                cylinder(u,w-0.1,w-0.1);
             translate([d-w,i-n,-c])
-                cylinder(u,w-0.1,w-0.1,center,$fn=36);
+                cylinder(u,w-0.1,w-0.1);
             translate([d-w,i-p,-c])
-                cylinder(u,w-0.1,w-0.1,center,$fn=36);
+                cylinder(u,w-0.1,w-0.1);
