@@ -7,6 +7,9 @@
     Z is Thickness Direction for Adapter Plate
 =========================================================================
 */
+
+$fn = 36;
+
 //  All Dimensions in mm, s & t are perimeter metal band angles in deg.
     a = 2.438;  // Bottom wedge height
     b = 1.778;  // Top wedge height
@@ -61,24 +64,24 @@
 // Right Side Triangular Shield
         translate([i,l+c/2,c], [d,0,0],[0,0,0])
             rotate ([0,-90,90])
-                linear_extrude (height =c,center=false, convexity = 10, twist = 0)
+                linear_extrude (height =c, convexity = 10, twist = 0)
                     polygon (points = [[0,0],[0,i],[g2,g3],[g1,g1]], paths = [[0,1,2,3]]);
 
 // Mirror Holder Left Side Securing Posts
             translate([m,j,0.1])                                // Make sure post embedded 0.1
-                cylinder(c,w-0.2,w-0.2,center,$fn=36);  // Top Left Hole
+                cylinder(c,w-0.2,w-0.2);  // Top Left Hole
             translate([n,j,0.1])
-                cylinder(c,w-0.2,w-0.2,center,$fn=36); // Center Left Hole
+                cylinder(c,w-0.2,w-0.2); // Center Left Hole
             translate([p,j,0.1])
-                cylinder(c,w-0.2,w-0.2,center,$fn=36);
+                cylinder(c,w-0.2,w-0.2);
 
 // Mirror Holder Right Side Securing Posts
             translate([m,l,0.1])
-                cylinder(c,w-0.2,w-0.2,center,$fn=36);
+                cylinder(c,w-0.2,w-0.2);
             translate([n,l,0.1])
-                cylinder(c,w-0.2,w-0.2,center,$fn=36);
+                cylinder(c,w-0.2,w-0.2);
             translate([p,l,0.1])
-                cylinder(c,w-0.2,w-0.2,center,$fn=36);
+                cylinder(c,w-0.2,w-0.2);
 /*
 ========================================================================
 COMMENTS

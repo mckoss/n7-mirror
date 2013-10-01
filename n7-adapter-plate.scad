@@ -7,6 +7,9 @@
     Z is Thickness Direction for Adapter Plate
 =========================================================================
 */
+
+$fn = 36;
+
 //  All Dimensions in mm, s & t are perimeter metal band angles in deg.
     a = 2.438;  // Bottom wedge height
     b = 1.778;  // Top wedge height
@@ -46,34 +49,34 @@
                 cube([i,h,c]); // (Height,Width,Thickness) of Plate
 // Top Plate Lens Opening
             translate([v,k,-.1]) // Cylinder a little taller than plate
-                cylinder(u,r,r,center,$fn=36);
+                cylinder(u,r,r);
 // Mirror Holder Left Side Attachment Holes
         translate([m,j,-0.1])
-            cylinder(u,w,w,center,$fn=36);      // Top Left Hole
+            cylinder(u,w,w);      // Top Left Hole
                 translate ([m,j,-0.1])
-                    cylinder (0.8,1.7*w,w,center,$fn=36); // Countersink for Heat Riviting
+                    cylinder (0.8,1.7*w,w); // Countersink for Heat Riviting
         translate([n,j,-0.1])
-            cylinder(u,w,w,center,$fn=36);      // Middle Left Hole
+            cylinder(u,w,w);      // Middle Left Hole
                 translate ([n,j,-0.1])
-                    cylinder (0.8,1.7*w,w,center,$fn=36); // Countersink
+                    cylinder (0.8,1.7*w,w); // Countersink
             translate([p,j,-0.1])
-                cylinder(u,w,w,center,$fn=36);  // Lower Left Hole
+                cylinder(u,w,w);  // Lower Left Hole
                     translate ([p,j,-0.1])
-                        cylinder (0.8,1.7*w,w,center,$fn=36); // Countersink
+                        cylinder (0.8,1.7*w,w); // Countersink
 
 // Mirror Holder Right Side Attachment Holes
             translate([m,l,-0.1])
-                cylinder(u,w,w,center,$fn=36);  // Top Right Hole
+                cylinder(u,w,w);  // Top Right Hole
                     translate ([m,l,-0.1])
-                        cylinder (0.8,1.7*w,w,center,$fn=36); // Countersink
+                        cylinder (0.8,1.7*w,w); // Countersink
             translate([n,l,-0.1])
-                cylinder(u,w,w,center,$fn=36);  // MIddle Right Hole
+                cylinder(u,w,w);  // MIddle Right Hole
                     translate ([n,l,-0.1])
-                        cylinder (0.8,1.7*w,w,center,$fn=36); // Countersink
+                        cylinder (0.8,1.7*w,w); // Countersink
             translate([p,l,-0.1])
-                cylinder(u,w,w,center,$fn=36);  // Lower Right Hole
+                cylinder(u,w,w);  // Lower Right Hole
                     translate ([p,l,-0.1])
-                        cylinder (0.8,1.7*w,w,center,$fn=36); // Countersink
+                        cylinder (0.8,1.7*w,w); // Countersink
         }
 // Upper & Lower Triangular Wedges Are Added to 3 Sides to Secure N7BWC to N7
 // N7 Left Rectangular Perimeter w/Origin at Bottom Left Corner
