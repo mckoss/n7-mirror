@@ -9,51 +9,92 @@
 // Misc constants
 E = 0.01;
 INCHES = 25.4;
+GAP = 0.2;
+VIEW_HEIGHT = 75;
 
 // Default cylinder resolution
 $fa = 3;
 $fs = 1;
 
 // Nexus 7 measurements
-N7_WIDTH = 118.5;
+N7_WIDTH = 119.0 + 1.0;      // Add slop for looser fit.
 N7_FLANGE = 1.5;
 N7_CASE_DEPTH = 4.7;
 CAMERA_INSET = 10.0;
-CAMERA_OPENING = 5.0;
+CAMERA_OPENING = 6.0;
+
+// Max field of view
+FIELD_OF_VIEW = 65.0;
 
 // Design constants
-THICKNESS = 3.0;
-FRAME_WIDTH = THICKNESS;
+THICKNESS = 2.0;
+FRAME_WIDTH = 4.0;
 MIRROR_WIDTH = 1.25 * INCHES;
 MIRROR_HEIGHT = 2.677 * INCHES;
-MIRROR_THICKNESS = 3.5;
+MIRROR_THICKNESS = 1.9;
 
-module mirror_holder() {
-    base();
-    bracket();
+base_width = N7_WIDTH + 2 * (FRAME_WIDTH - N7_FLANGE);
+base_height = 2 * (CAMERA_INSET + FRAME_WIDTH);
+base_depth = N7_CASE_DEPTH + THICKNESS;
+echo("Internal", base_width - 2 * FRAME_WIDTH + 2 * N7_FLANGE);
+echo(tan(FIELD_OF_VIEW / 2));
+module assembly() {
+  difference() {
+    union() {
+      base();
+      mirror_holder();
+    }
+  # mirror_glass();
+  }
 }
 
 module base(connector=false) {
-  width = N7_WIDTH + 2 * (FRAME_WIDTH - N7_FLANGE);
-  height = 2 * (CAMERA_INSET + FRAME_WIDTH);
-  depth = N7_CASE_DEPTH + THICKNESS;
-  oculus = CAMERA_OPENING + 2 * THICKNESS;
+  oculus = CAMERA_OPENING + 2 * THICKNESS * tan(FIELD_OF_VIEW / 2);
 
-  translate([0, 0, -depth / 2])
+  translate([0, 0, -base_depth / 2])
   difference() {
-    cube([width, height, depth], center=true);
-    cylinder(r=oculus / 2, h=depth + 2 * E, center=true);
+    cube([base_width, base_height, base_depth], center=true);
+    translate([0, 0, base_depth / 2 - THICKNESS - E])
+      cylinder(r1=CAMERA_OPENING / 2, r2=oculus / 2, h=THICKNESS + 2 * E);
+    % translate([0, 0, base_depth / 2 - THICKNESS])
+      cylinder(r1=CAMERA_OPENING / 2,
+               r2=CAMERA_OPENING / 2 + VIEW_HEIGHT * tan(FIELD_OF_VIEW / 2),
+               h=VIEW_HEIGHT);
     translate([0, -FRAME_WIDTH, -THICKNESS])
-      cube([width - 2 * FRAME_WIDTH, height, depth], center=true);
+      cube([base_width - 2 * FRAME_WIDTH, base_height, base_depth], center=true);
 
     // Rout out side bezels
-    translate([-N7_WIDTH  / 2 + N7_FLANGE, -height / 2 - E, -THICKNESS / 2])
-      router(height=N7_CASE_DEPTH, depth=N7_FLANGE, length=height - FRAME_WIDTH);
-    translate([N7_WIDTH  / 2 - N7_FLANGE, -height / 2 - E, -THICKNESS / 2])
+    translate([-N7_WIDTH  / 2 + N7_FLANGE, -base_height / 2 - E, -THICKNESS / 2])
+      router(height=N7_CASE_DEPTH, depth=N7_FLANGE, length=base_height - FRAME_WIDTH);
+    translate([N7_WIDTH  / 2 - N7_FLANGE, -base_height / 2 - E, -THICKNESS / 2])
       mirror([1, 0, 0])
-          router(height=N7_CASE_DEPTH, depth=N7_FLANGE, length=height - FRAME_WIDTH);
+        router(height=N7_CASE_DEPTH, depth=N7_FLANGE, length=base_height - FRAME_WIDTH);
   }
 }
+
+module mirror_holder() {
+  width = MIRROR_WIDTH + 2 * THICKNESS;
+  height = MIRROR_HEIGHT + 2 * THICKNESS;
+  depth = MIRROR_THICKNESS + THICKNESS;
+
+
+  difference() {
+    translate([-width / 2, -base_height / 2, 0])
+      rotate(a=45, v=[1, 0, 0])
+        translate([0, 0, -depth])
+          cube([width, height, depth]);
+    translate([0, 0, -100 - E])
+      cube([200, 200, 200], center=true);
+  }
+}
+
+module mirror_glass() {
+  translate([0, -(CAMERA_INSET + FRAME_WIDTH) + THICKNESS * sqrt(2), 0])
+  rotate(a=45, v=[1, 0, 0])
+    translate([0, MIRROR_HEIGHT / 2, - MIRROR_THICKNESS / 2])
+      cube([MIRROR_WIDTH, MIRROR_HEIGHT, MIRROR_THICKNESS + E], center=true);
+}
+
 
 /* Rout a triangular bevel of specified dimensions.
 
@@ -89,7 +130,10 @@ module router(height, depth, length) {
                  ]);
 }
 
-module bracket() {
+/*
+difference() {
+  mirror_holder();
+  mirror_glass();
 }
-
-mirror_holder();
+*/
+assembly();
