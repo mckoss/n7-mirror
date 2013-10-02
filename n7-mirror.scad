@@ -10,7 +10,6 @@
 E = 0.01;
 INCHES = 25.4;
 GAP = 0.2;
-VIEW_HEIGHT = 75;
 
 // Default cylinder resolution
 $fa = 3;
@@ -23,14 +22,15 @@ N7_CASE_DEPTH = 4.7;
 CAMERA_INSET = 10.0;
 CAMERA_OPENING = 6.0;
 
-// Max field of view
-FIELD_OF_VIEW = 65.0;
+// Max field of view (degrees)
+FIELD_OF_VIEW = 60.0;
+VIEW_EXTENT = 75;
 
 // Design constants
 THICKNESS = 2.0;
 FRAME_WIDTH = 4.0;
 MIRROR_WIDTH = 1.25 * INCHES;
-MIRROR_HEIGHT = 2.677 * INCHES;
+MIRROR_HEIGHT = 2.25 * INCHES;
 MIRROR_THICKNESS = 1.9;
 
 base_width = N7_WIDTH + 2 * (FRAME_WIDTH - N7_FLANGE);
@@ -50,16 +50,20 @@ module assembly() {
 
 module base(connector=false) {
   oculus = CAMERA_OPENING + 2 * THICKNESS * tan(FIELD_OF_VIEW / 2);
+  mirror_dist = THICKNESS + base_height / 2 - THICKNESS - MIRROR_THICKNESS;
+  virt_cam_y = -mirror_dist;
+  virt_cam_z = mirror_dist - THICKNESS;
 
+   % translate([0, virt_cam_y, virt_cam_z])
+      rotate(-90, v=[1, 0, 0])
+      cylinder(r1=CAMERA_OPENING / 2,
+               r2=CAMERA_OPENING / 2 + VIEW_EXTENT * tan(FIELD_OF_VIEW / 2),
+               h=VIEW_EXTENT);
   translate([0, 0, -base_depth / 2])
   difference() {
     cube([base_width, base_height, base_depth], center=true);
     translate([0, 0, base_depth / 2 - THICKNESS - E])
       cylinder(r1=CAMERA_OPENING / 2, r2=oculus / 2, h=THICKNESS + 2 * E);
-    % translate([0, 0, base_depth / 2 - THICKNESS])
-      cylinder(r1=CAMERA_OPENING / 2,
-               r2=CAMERA_OPENING / 2 + VIEW_HEIGHT * tan(FIELD_OF_VIEW / 2),
-               h=VIEW_HEIGHT);
     translate([0, -FRAME_WIDTH, -THICKNESS])
       cube([base_width - 2 * FRAME_WIDTH, base_height, base_depth], center=true);
 
