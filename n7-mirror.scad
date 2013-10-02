@@ -25,7 +25,7 @@ CAMERA_INSET = 10.0;
 CAMERA_OPENING = 6.0;
 
 // Max field of view (degrees)
-VERTICAL_FIELD = 55.0;
+VERTICAL_FIELD = 60.0;
 HORIZONTAL_FIELD = 45.0;
 FIELD_OF_VIEW = max(VERTICAL_FIELD, HORIZONTAL_FIELD);
 VIEW_EXTENT = 75;
@@ -33,14 +33,19 @@ VIEW_EXTENT = 75;
 // Design constants
 THICKNESS = 2.0;
 FRAME_WIDTH = 4.0;
-MIRROR_WIDTH = 1.25 * INCHES;
+MIRROR_WIDTH = 1.5 * INCHES;
 MIRROR_HEIGHT = 2.25 * INCHES;
 MIRROR_THICKNESS = 1.9;
 MIRROR_LIFT = 0.0;
+MIRROR_ANGLE = 50.0;
 
 base_width = N7_WIDTH + 2 * (FRAME_WIDTH - N7_FLANGE);
 base_height = 2 * (CAMERA_INSET + FRAME_WIDTH);
 base_depth = N7_CASE_DEPTH + THICKNESS;
+
+mirror_horiz_thickness = (THICKNESS + MIRROR_THICKNESS) / sin(MIRROR_ANGLE);
+mirror_offset = base_height / 2 - mirror_horiz_thickness;
+
 module assembly() {
   difference() {
     union() {
@@ -75,13 +80,13 @@ module base(connector=false) {
 }
 
 module field_of_view() {
-  mirror_dist = THICKNESS + base_height / 2 - THICKNESS - MIRROR_THICKNESS + MIRROR_LIFT;
-  virt_cam_y = -mirror_dist;
-  virt_cam_z = mirror_dist - THICKNESS;
+  virt_cam = mirrorp(MIRROR_ANGLE, [mirror_offset, -THICKNESS]);
+  virt_cam_y = virt_cam[0] - mirror_offset;
+  virt_cam_z = virt_cam[1];
 
   // Field of view indicator
   translate([0, virt_cam_y, virt_cam_z])
-    rotate(-90, v=[1, 0, 0])
+    rotate(2 * (MIRROR_ANGLE - 45) - 90, v=[1, 0, 0])
       union() {
         translate([0, 0, VIEW_EXTENT])
           mirror([0, 0, 1])
@@ -98,7 +103,7 @@ module mirror_holder() {
   translate([0, 0, MIRROR_LIFT])
   difference() {
     translate([-width / 2, -base_height / 2, 0])
-      rotate(a=45, v=[1, 0, 0])
+      rotate(a=MIRROR_ANGLE, v=[1, 0, 0])
         translate([0, 0, -depth])
           cube([width, height, depth]);
     translate([0, 0, -100 - E])
@@ -107,8 +112,8 @@ module mirror_holder() {
 }
 
 module mirror_glass() {
-  translate([0, -base_height / 2 + THICKNESS * sqrt(2), MIRROR_LIFT])
-    rotate(a=45, v=[1, 0, 0])
+  translate([0, -base_height / 2 + THICKNESS / sin(MIRROR_ANGLE), MIRROR_LIFT])
+    rotate(a=MIRROR_ANGLE, v=[1, 0, 0])
       translate([0, MIRROR_HEIGHT / 2, - MIRROR_THICKNESS / 2])
         cube([MIRROR_WIDTH, MIRROR_HEIGHT, MIRROR_THICKNESS + E], center=true);
 }
@@ -176,7 +181,23 @@ module pyramid(base, height) {
   );
 }
 
+//
+// Reflect in mirror at angle, a, to x axis.
+//
+function mirrorp(a, p) = rotp(a, ry(rotp(-a, p)));
+
+//
+// Rotate point [x, y] counter-clockwise about the origin.
+//
+function rotp(a, p) = [[cos(a), -sin(a)], [sin(a), cos(a)]] * p;
+
+//
+// Reflect y coordinate (about the x axis).
+//
+function ry(p) = [p[0], -p[1]];
+
 % field_of_view();
+% mirror_glass();
 
 if (PART == "assembly") assembly();
 if (PART == "base") base();
