@@ -23,7 +23,7 @@ CAMERA_INSET = 10.0;
 CAMERA_OPENING = 6.0;
 
 // Max field of view (degrees)
-VERTICAL_FIELD = 60.0;
+VERTICAL_FIELD = 55.0;
 HORIZONTAL_FIELD = 45.0;
 FIELD_OF_VIEW = max(VERTICAL_FIELD, HORIZONTAL_FIELD);
 VIEW_EXTENT = 75;
@@ -34,6 +34,7 @@ FRAME_WIDTH = 4.0;
 MIRROR_WIDTH = 1.25 * INCHES;
 MIRROR_HEIGHT = 2.25 * INCHES;
 MIRROR_THICKNESS = 1.9;
+MIRROR_LIFT = 0.0;
 
 base_width = N7_WIDTH + 2 * (FRAME_WIDTH - N7_FLANGE);
 base_height = 2 * (CAMERA_INSET + FRAME_WIDTH);
@@ -41,7 +42,10 @@ base_depth = N7_CASE_DEPTH + THICKNESS;
 module assembly() {
   difference() {
     union() {
-      base();
+      difference() {
+        base();
+        field_of_view();
+      }
       mirror_holder();
     }
   # mirror_glass();
@@ -50,18 +54,9 @@ module assembly() {
 
 module base(connector=false) {
   oculus = CAMERA_OPENING + 2 * THICKNESS * tan(FIELD_OF_VIEW / 2);
-  mirror_dist = THICKNESS + base_height / 2 - THICKNESS - MIRROR_THICKNESS;
-  virt_cam_y = -mirror_dist;
-  virt_cam_z = mirror_dist - THICKNESS;
 
-   % translate([0, virt_cam_y, virt_cam_z])
-      rotate(-90, v=[1, 0, 0])
-      union() {
-        translate([0, 0, VIEW_EXTENT])
-          mirror([0, 0, 1])
-            scale([2 * tan(HORIZONTAL_FIELD / 2), 2 * tan(VERTICAL_FIELD / 2), 1])
-              pyramid(VIEW_EXTENT, VIEW_EXTENT + CAMERA_OPENING);
-      }
+  % field_of_view();
+
   translate([0, 0, -base_depth / 2])
   difference() {
     cube([base_width, base_height, base_depth], center=true);
@@ -79,12 +74,28 @@ module base(connector=false) {
   }
 }
 
+module field_of_view() {
+  mirror_dist = THICKNESS + base_height / 2 - THICKNESS - MIRROR_THICKNESS + MIRROR_LIFT;
+  virt_cam_y = -mirror_dist;
+  virt_cam_z = mirror_dist - THICKNESS;
+
+  // Field of view indicator
+  translate([0, virt_cam_y, virt_cam_z])
+    rotate(-90, v=[1, 0, 0])
+      union() {
+        translate([0, 0, VIEW_EXTENT])
+          mirror([0, 0, 1])
+            scale([2 * tan(HORIZONTAL_FIELD / 2), 2 * tan(VERTICAL_FIELD / 2), 1])
+              pyramid(VIEW_EXTENT, VIEW_EXTENT + CAMERA_OPENING);
+      }
+}
+
 module mirror_holder() {
   width = MIRROR_WIDTH + 2 * THICKNESS;
   height = MIRROR_HEIGHT + 2 * THICKNESS;
   depth = MIRROR_THICKNESS + THICKNESS;
 
-
+  translate([0, 0, MIRROR_LIFT])
   difference() {
     translate([-width / 2, -base_height / 2, 0])
       rotate(a=45, v=[1, 0, 0])
@@ -96,10 +107,10 @@ module mirror_holder() {
 }
 
 module mirror_glass() {
-  translate([0, -(CAMERA_INSET + FRAME_WIDTH) + THICKNESS * sqrt(2), 0])
-  rotate(a=45, v=[1, 0, 0])
-    translate([0, MIRROR_HEIGHT / 2, - MIRROR_THICKNESS / 2])
-      cube([MIRROR_WIDTH, MIRROR_HEIGHT, MIRROR_THICKNESS + E], center=true);
+  translate([0, -base_height / 2 + THICKNESS * sqrt(2), MIRROR_LIFT])
+    rotate(a=45, v=[1, 0, 0])
+      translate([0, MIRROR_HEIGHT / 2, - MIRROR_THICKNESS / 2])
+        cube([MIRROR_WIDTH, MIRROR_HEIGHT, MIRROR_THICKNESS + E], center=true);
 }
 
 
