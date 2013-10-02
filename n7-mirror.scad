@@ -23,7 +23,9 @@ CAMERA_INSET = 10.0;
 CAMERA_OPENING = 6.0;
 
 // Max field of view (degrees)
-FIELD_OF_VIEW = 60.0;
+VERTICAL_FIELD = 60.0;
+HORIZONTAL_FIELD = 45.0;
+FIELD_OF_VIEW = max(VERTICAL_FIELD, HORIZONTAL_FIELD);
 VIEW_EXTENT = 75;
 
 // Design constants
@@ -36,8 +38,6 @@ MIRROR_THICKNESS = 1.9;
 base_width = N7_WIDTH + 2 * (FRAME_WIDTH - N7_FLANGE);
 base_height = 2 * (CAMERA_INSET + FRAME_WIDTH);
 base_depth = N7_CASE_DEPTH + THICKNESS;
-echo("Internal", base_width - 2 * FRAME_WIDTH + 2 * N7_FLANGE);
-echo(tan(FIELD_OF_VIEW / 2));
 module assembly() {
   difference() {
     union() {
@@ -56,9 +56,12 @@ module base(connector=false) {
 
    % translate([0, virt_cam_y, virt_cam_z])
       rotate(-90, v=[1, 0, 0])
-      cylinder(r1=CAMERA_OPENING / 2,
-               r2=CAMERA_OPENING / 2 + VIEW_EXTENT * tan(FIELD_OF_VIEW / 2),
-               h=VIEW_EXTENT);
+      union() {
+        translate([0, 0, VIEW_EXTENT])
+          mirror([0, 0, 1])
+            scale([2 * tan(HORIZONTAL_FIELD / 2), 2 * tan(VERTICAL_FIELD / 2), 1])
+              pyramid(VIEW_EXTENT, VIEW_EXTENT + CAMERA_OPENING);
+      }
   translate([0, 0, -base_depth / 2])
   difference() {
     cube([base_width, base_height, base_depth], center=true);
@@ -117,21 +120,49 @@ module mirror_glass() {
    to ensure overlap coverage of face of routed surface.
 */
 module router(height, depth, length) {
-   polyhedron(
-      points=[[-depth, 0, 0],
-              [E, 0, height / 2],
-              [E, 0, -height / 2],
+  polyhedron(
+    points=[[-depth, 0, 0],
+            [E, 0, height / 2],
+            [E, 0, -height / 2],
 
-              [-depth, length, 0],
-              [E , length, height / 2],
-              [E, length, -height / 2]
-              ],
-      triangles=[[0, 1, 2],              // front
-                 [2, 1, 4], [2, 4, 5],   // right
-                 [0, 3, 4], [0, 4, 1],   // top
-                 [0, 2, 5], [0, 5, 3],   // bottom
-                 [3, 5, 4]               // back
-                 ]);
+            [-depth, length, 0],
+            [E , length, height / 2],
+            [E, length, -height / 2]
+           ],
+    triangles=[[0, 1, 2],              // front
+               [2, 1, 4], [2, 4, 5],   // right
+               [0, 3, 4], [0, 4, 1],   // top
+               [0, 2, 5], [0, 5, 3],   // bottom
+               [3, 5, 4]               // back
+              ]
+  );
+}
+
+/* Pyramid centered about origin (view from above):
+
+    3-----2
+    |\  /|
+    | \/ |
+    | /\4|
+    |/__\|
+    0    1
+
+*/
+module pyramid(base, height) {
+  polyhedron(
+    points=[[-base / 2, -base / 2, 0],
+            [base / 2, -base / 2, 0],
+            [base / 2, base / 2, 0],
+            [-base / 2, base / 2, 0],
+            [0, 0, height]
+            ],
+    triangles=[[0, 1, 2], [0, 2, 3],   // bottom
+               [4, 3, 2],             // N
+               [4, 2, 1],             // E
+               [4, 0, 3],             // W
+               [4, 1, 0]              // S
+               ]
+  );
 }
 
 /*
