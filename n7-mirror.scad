@@ -6,6 +6,8 @@
    Oct 1, 2013.
 */
 
+PART = "assembly"; // [assembly, base, holder]
+
 // Misc constants
 E = 0.01;
 INCHES = 25.4;
@@ -16,8 +18,8 @@ $fa = 3;
 $fs = 1;
 
 // Nexus 7 measurements
-N7_WIDTH = 119.0 + 1.0;      // Add slop for looser fit.
 N7_FLANGE = 1.5;
+N7_WIDTH = 119.0 + N7_FLANGE;
 N7_CASE_DEPTH = 4.7;
 CAMERA_INSET = 10.0;
 CAMERA_OPENING = 6.0;
@@ -48,14 +50,12 @@ module assembly() {
       }
       mirror_holder();
     }
-  # mirror_glass();
+  mirror_glass();
   }
 }
 
 module base(connector=false) {
   oculus = CAMERA_OPENING + 2 * THICKNESS * tan(FIELD_OF_VIEW / 2);
-
-  % field_of_view();
 
   translate([0, 0, -base_depth / 2])
   difference() {
@@ -176,10 +176,12 @@ module pyramid(base, height) {
   );
 }
 
-/*
-difference() {
-  mirror_holder();
-  mirror_glass();
-}
-*/
-assembly();
+% field_of_view();
+
+if (PART == "assembly") assembly();
+if (PART == "base") base();
+if (PART == "holder")
+  difference() {
+    mirror_holder();
+    mirror_glass();
+  }
