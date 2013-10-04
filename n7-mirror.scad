@@ -19,7 +19,7 @@ $fs = 1;
 
 // Nexus 7 measurements
 N7_FLANGE = 1.5;
-N7_WIDTH = 119.0 + N7_FLANGE;
+N7_WIDTH = 119.0 + N7_FLANGE + 0.5;
 N7_CASE_DEPTH = 4.7;
 CAMERA_INSET = 10.0;
 CAMERA_OPENING = 6.0;
